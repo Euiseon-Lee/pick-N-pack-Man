@@ -1,0 +1,23 @@
+services:
+  postgres:
+    image: postgres:16-alpine     # 1) 이 이미지를 Docker Hub에서 다운받고
+    container_name: pnp-postgres  # 2) pnp-postgres라는 이름으로 컨테이너 생성
+    restart: unless-stopped
+    ports:
+      - "6432:5432"               # 3) 호스트 6432 → 컨테이너 5432 연결
+    environment:
+      POSTGRES_DB: pick_n_pack_man  # 4) DB 자동 생성
+      POSTGRES_USER: pnp            # 5) 유저 자동 생성
+      POSTGRES_PASSWORD: pnp1234    # 6) 비밀번호 설정
+      TZ: Asia/Seoul
+    volumes:
+      - pnp-postgres-data:/var/lib/postgresql/data    # 7) 데이터 영속화
+      - ./src/main/resources/db/init:/docker-entrypoint-initdb.d    # 8) 초기 SQL 실행
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pnp -d pick_n_pack_man"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pnp-postgres-data:

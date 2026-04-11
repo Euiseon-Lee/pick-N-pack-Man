@@ -3,19 +3,19 @@ spring:
     name: pick-N-pack-Man
 
   datasource:
-    url: jdbc:mysql://localhost:3306/pick_n_pack_man?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
-    username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:root}
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:postgresql://localhost:6432/pick_n_pack_man
+    username: ${DB_USERNAME:pnp}
+    password: ${DB_PASSWORD:pnp1234}
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.MySQLDialect
+        dialect: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
 
 server:
