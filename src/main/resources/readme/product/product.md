@@ -154,8 +154,10 @@ WMS에서 재고 동기화 이벤트 수신
 | **옵션 정보** | 3 | `option_type` | varchar(100) | NOT NULL | - | 옵션 유형 (컬러, 사이즈 등) |
 | | 4 | `option_value` | varchar(255) | NOT NULL | - | 옵션 값 (블랙, 270mm 등) |
 | | 5 | `sort_order` | int | NOT NULL | 0 | 정렬 순서 |
-| **감사** | 6 | `created_at` | timestamp | NOT NULL | CURRENT_TIMESTAMP | 생성일 |
-| | 7 | `updated_at` | timestamp | NOT NULL | ON UPDATE CURRENT_TIMESTAMP | 수정일 |
+| **감사** | 6 | `created_user_id` | varchar(100) | NOT NULL | 'SYSTEM' | 생성자 |
+| | 7 | `created_at` | timestamp | NOT NULL | CURRENT_TIMESTAMP | 생성일 |
+| | 8 | `updated_user_id` | varchar(100) | NULL | - | 수정자 |
+| | 9 | `updated_at` | timestamp | NOT NULL | CURRENT_TIMESTAMP | 수정일 |
 
 ---
 

@@ -36,7 +36,9 @@ CREATE TABLE product_option (
     option_value                VARCHAR(255)    NOT NULL,
     sort_order                  INT             NOT NULL DEFAULT 0,
 
+    created_user_id             VARCHAR(100)    NOT NULL DEFAULT 'SYSTEM',
     created_at                  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_user_id             VARCHAR(100),
     updated_at                  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -48,6 +50,8 @@ COMMENT ON COLUMN product_option.product_id IS 'product_master.id';
 COMMENT ON COLUMN product_option.option_type IS '옵션 유형 (컬러, 사이즈 등)';
 COMMENT ON COLUMN product_option.option_value IS '옵션 값 (블랙, 270mm 등)';
 COMMENT ON COLUMN product_option.sort_order IS '정렬 순서';
+COMMENT ON COLUMN product_option.created_user_id IS '생성자';
+COMMENT ON COLUMN product_option.updated_user_id IS '수정자';
 
 
 -- ============================================
