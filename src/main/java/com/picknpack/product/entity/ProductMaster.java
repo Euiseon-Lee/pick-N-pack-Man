@@ -51,4 +51,10 @@ public class ProductMaster extends BaseEntity {
     // product_master (1) ──→ (N) product_option
     @OneToMany(mappedBy = "productMaster")
     private List<ProductOption> productOptions = new ArrayList<>();
+
+    public ProductMaster(String name, String code, String description) {
+    this.name = name;
+    this.code = code;
+    this.description = description;
+}
 }
