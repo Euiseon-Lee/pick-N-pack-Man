@@ -143,3 +143,40 @@ COMMENT ON COLUMN inventory.defective_stock IS '불량 재고';
 COMMENT ON COLUMN inventory.warehouse_id IS '창고 ID';
 COMMENT ON COLUMN inventory.warehouse_name IS '창고명';
 COMMENT ON COLUMN inventory.last_synced_at IS 'WMS 마지막 동기화 일시';
+
+
+-- ============================================
+-- marketplace_product_mapping (마켓 상품 ↔ 우리 상품 매핑)
+-- ============================================
+CREATE TABLE marketplace_product_mapping (
+    id                          BIGINT          GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+
+    marketplace_type            VARCHAR(50)     NOT NULL,
+    marketplace_seller_id       VARCHAR(255)    NOT NULL,
+    marketplace_product_id      VARCHAR(255)    NOT NULL,
+    marketplace_option_id       VARCHAR(255),
+
+    product_id                  BIGINT          NOT NULL REFERENCES product_master (id),
+    product_item_id             BIGINT          REFERENCES product_item (id),
+
+    created_user_id             VARCHAR(100)    NOT NULL DEFAULT 'SYSTEM',
+    created_at                  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_user_id             VARCHAR(100),
+    updated_at                  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE UNIQUE INDEX UQ_marketplace_product_mapping ON marketplace_product_mapping (
+    marketplace_type, marketplace_seller_id, marketplace_product_id, marketplace_option_id
+);
+CREATE INDEX IDX_marketplace_product_mapping_product_id ON marketplace_product_mapping (product_id);
+CREATE INDEX IDX_marketplace_product_mapping_product_item_id ON marketplace_product_mapping (product_item_id);
+
+COMMENT ON TABLE marketplace_product_mapping IS '마켓 상품 ↔ 우리 상품 매핑';
+COMMENT ON COLUMN marketplace_product_mapping.marketplace_type IS '마켓 구분 (naver, cafe24 등)';
+COMMENT ON COLUMN marketplace_product_mapping.marketplace_seller_id IS '마켓 판매처 ID';
+COMMENT ON COLUMN marketplace_product_mapping.marketplace_product_id IS '마켓 상품 식별코드';
+COMMENT ON COLUMN marketplace_product_mapping.marketplace_option_id IS '마켓 옵션 식별코드 (옵션 없으면 null)';
+COMMENT ON COLUMN marketplace_product_mapping.product_id IS 'product_master.id';
+COMMENT ON COLUMN marketplace_product_mapping.product_item_id IS 'product_item.id (SKU)';
+COMMENT ON COLUMN marketplace_product_mapping.created_user_id IS '생성자';
+COMMENT ON COLUMN marketplace_product_mapping.updated_user_id IS '수정자';

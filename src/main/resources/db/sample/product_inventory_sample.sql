@@ -108,3 +108,29 @@ VALUES
 
     -- 나이키 양말 세트 - 창고 A
     (11, 100, 95, 5, 0, 'WH-A', '메인창고');
+
+
+-- 6. 마켓 상품 매핑 (marketplace_product_mapping)
+-- 우리 상품/SKU가 각 마켓에 어떤 ID로 등록되어 있는지 매핑
+INSERT INTO marketplace_product_mapping (marketplace_type, marketplace_seller_id, marketplace_product_id, marketplace_option_id, product_id, product_item_id)
+VALUES
+    -- 나이키 에어맥스 270 - 네이버 (SELLER_001)
+    ('naver', 'SELLER_001', 'NAVER-AM270', 'OPT-BK26', 1, 1),   -- 블랙/260mm
+    ('naver', 'SELLER_001', 'NAVER-AM270', 'OPT-BK27', 1, 2),   -- 블랙/270mm
+    ('naver', 'SELLER_001', 'NAVER-AM270', 'OPT-BK28', 1, 3),   -- 블랙/280mm
+    ('naver', 'SELLER_001', 'NAVER-AM270', 'OPT-WH26', 1, 4),   -- 화이트/260mm
+    ('naver', 'SELLER_001', 'NAVER-AM270', 'OPT-WH27', 1, 5),   -- 화이트/270mm
+    ('naver', 'SELLER_001', 'NAVER-AM270', 'OPT-WH28', 1, 6),   -- 화이트/280mm
+
+    -- 나이키 에어맥스 270 - 카페24 (SELLER_002)
+    ('cafe24', 'SELLER_002', 'CAFE24-AM270', '1', 1, 1),
+    ('cafe24', 'SELLER_002', 'CAFE24-AM270', '2', 1, 2),
+
+    -- 아디다스 울트라부스트 22 - 네이버
+    ('naver', 'SELLER_001', 'NAVER-UB22', 'OPT-BK265', 2, 7),
+    ('naver', 'SELLER_001', 'NAVER-UB22', 'OPT-BK275', 2, 8),
+    ('naver', 'SELLER_001', 'NAVER-UB22', 'OPT-GR265', 2, 9),
+    ('naver', 'SELLER_001', 'NAVER-UB22', 'OPT-GR275', 2, 10),
+
+    -- 나이키 양말 세트 - 카페24 (옵션 없는 상품)
+    ('cafe24', 'SELLER_002', 'CAFE24-NKSOCK', NULL, 3, 11);

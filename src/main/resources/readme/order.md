@@ -85,19 +85,32 @@ order_master #100
 ```
 마켓에서 주문 수집
   → order_master 생성 (pnp_order_no 자동생성, origin_order_id = null)
-  → order_item 생성 (matching_status = 1, origin_order_item_id = null)
+  → order_item 생성 (origin_order_item_id = null)
+     ↓ 자동 매칭 시도
+     marketplace_product_mapping 조회
+     (marketplace_type + marketplace_seller_id + marketplace_product_id + marketplace_option_id)
+     ↓
+     매핑 존재:
+       matched_product_id, matched_product_item_id 채움
+       matching_status = 3 (STOCK_MATCHED) 또는 2 (PRODUCT_MATCHED, SKU 미매핑 시)
+     매핑 없음:
+       matched_product_id = null, matched_product_item_id = null
+       matching_status = 1 (NOT_MATCHED)
   → order_item_history 기록 (history_type = CREATED)
 ```
 
-### 흐름 2: 상품/재고 매칭
+### 흐름 2: 수동 매칭 (자동 매칭 실패 시)
 
 ```
-담당자가 매칭 수행
+담당자가 미매칭 주문을 직접 매칭
   → order_item.matched_product_id 설정, matching_status = 2
   → order_item_history 기록 (history_type = PRODUCT_MATCHED)
 
   → order_item.matched_product_item_id 설정, matching_status = 3
   → order_item_history 기록 (history_type = STOCK_MATCHED)
+
+  → (선택) marketplace_product_mapping에 매핑 저장
+     → 다음부터는 자동 매칭됨 (학습 효과)
 
 출고 가능 여부 판단 (런타임):
   matching_status = 3 AND SUM(inventory.available_stock) >= quantity → AVAILABLE

@@ -5,11 +5,12 @@
 ## 1. 테이블 구성
 
 ```
-product_master          상품 마스터
-product_item           SKU (옵션 조합 결과, 재고 관리의 최소 단위)
-product_option         옵션 (유형 + 값)
-product_item_option    SKU ↔ 옵션 매핑
-inventory               창고별 재고
+product_master                  상품 마스터
+product_item                    SKU (옵션 조합 결과, 재고 관리의 최소 단위)
+product_option                  옵션 (유형 + 값)
+product_item_option             SKU ↔ 옵션 매핑
+inventory                       창고별 재고
+marketplace_product_mapping     마켓 상품 ↔ 우리 상품 매핑
 ```
 
 ---
@@ -23,6 +24,7 @@ inventory               창고별 재고
 | `product_option` | 이 상품에 어떤 선택지가 있지? | 옵션 유형과 값의 정의 (컬러:블랙, 사이즈:270mm) | 낮음 |
 | `product_item_option` | 이 SKU가 어떤 옵션 조합이지? | SKU와 옵션 값의 N:N 매핑 | 낮음 |
 | `inventory` | 지금 몇 개 있지? | 창고별 실시간 재고 수량 | **높음** |
+| `marketplace_product_mapping` | 이 마켓 상품이 우리 어느 SKU지? | 마켓 상품/옵션 ↔ 우리 상품/SKU 매핑 (자동 매칭용) | 중간 |
 
 ---
 
@@ -33,6 +35,9 @@ product_master (1) ──→ (N) product_item (SKU)
 product_master (1) ──→ (N) product_option (옵션)
 product_item  (N) ←──→ (N) product_option (매핑: product_item_option)
 product_item  (1) ──→ (N) inventory (창고별 재고)
+
+marketplace_product_mapping (N) ──→ (1) product_master
+marketplace_product_mapping (N) ──→ (1) product_item (nullable, 옵션 없는 상품은 null)
 ```
 
 ### 타 도메인과의 연결
@@ -42,6 +47,11 @@ order_item.matched_product_id      → product_master.id
 order_item.matched_product_item_id → product_item.id
 
 출고 가능 여부: order_item.matching_status + inventory 런타임 JOIN
+
+자동 매칭:
+  주문 접수 시 (marketplace_type + marketplace_seller_id + marketplace_product_id + marketplace_option_id)
+  → marketplace_product_mapping 조회
+  → matched_product_id, matched_product_item_id 자동 채움
 ```
 
 ---
@@ -72,31 +82,40 @@ product_master #10 (나이키 에어맥스 270)
   │       └── product_item_option: option_id=#2(화이트), #3(260mm)
   │       └── inventory:
   │             #503: warehouse_id='WH-A', available_stock=3
+  │
+  └── marketplace_product_mapping
+        #1: naver + SELLER_001 + NAVER-12345 + OPT-A → product_item #100
+        #2: naver + SELLER_001 + NAVER-12345 + OPT-B → product_item #101
+        #3: cafe24 + SELLER_002 + CAFE24-99 + null    → product_id=10 (옵션 없는 경우)
 ```
 
-### 흐름 1: 상품 등록
+### 흐름 1: 상품 등록 → 마켓 업로드
 
 ```
-담당자가 상품 등록
+1) 우리 시스템에 상품 등록
   → product_master 생성 (name='나이키 에어맥스 270', code='AM270')
   → product_option 생성 (컬러: 블랙/화이트, 사이즈: 260/270)
   → product_item 생성 (각 옵션 조합별 SKU)
   → product_item_option 생성 (SKU ↔ 옵션 매핑)
   → inventory 생성 (각 SKU × 창고별 초기 재고)
+
+2) 마켓(네이버, 카페24 등)에 상품 업로드
+  → 마켓 API 호출 → 마켓이 반환한 상품/옵션 ID 획득
+  → marketplace_product_mapping 생성
+     (marketplace_type, marketplace_seller_id, marketplace_product_id, marketplace_option_id)
+     → (product_id, product_item_id) 매핑 저장
 ```
 
-### 흐름 2: 주문 매칭
+### 흐름 2: 주문 자동 매칭
 
 ```
-order_item #1 (marketplace_product_name='나이키 에어맥스 블랙 270')
+order_item #1 (marketplace_type='naver', marketplace_product_id='NAVER-12345', marketplace_option_id='OPT-A')
   │
-  ▼ 상품 매칭
-  matched_product_id = 10 (product_master)
-  matching_status = 2 (PRODUCT_MATCHED)
-  │
-  ▼ SKU 매칭
-  matched_product_item_id = 100 (product_item: 블랙/270mm)
-  matching_status = 3 (STOCK_MATCHED)
+  ▼ 자동 매칭
+  marketplace_product_mapping 조회
+    → (naver + SELLER_001 + NAVER-12345 + OPT-A)
+    → matched_product_id = 10, matched_product_item_id = 100 자동 채움
+    → matching_status = 3 (STOCK_MATCHED)
   │
   ▼ 출고 가능 여부 판단 (런타임)
   SELECT SUM(inv.available_stock) FROM inventory inv
@@ -104,7 +123,21 @@ order_item #1 (marketplace_product_name='나이키 에어맥스 블랙 270')
   → 8 + 5 = 13개 가용 → AVAILABLE
 ```
 
-### 흐름 3: 재고 변동
+### 흐름 3: 주문 수동 매칭 (자동 매칭 실패 시)
+
+```
+자동 매칭 실패 케이스:
+  - 신규 상품이라 marketplace_product_mapping에 없음
+  - 마켓 상품명 변경으로 매핑 깨짐
+
+담당자가 수동으로 매칭:
+  → order_item.matched_product_id 설정 (matching_status = 2)
+  → order_item.matched_product_item_id 설정 (matching_status = 3)
+  → (선택) marketplace_product_mapping에 매핑 저장
+     → 다음 주문부터 자동 매칭됨 (학습 효과)
+```
+
+### 흐름 4: 재고 변동
 
 ```
 WMS에서 재고 동기화 이벤트 수신
@@ -113,7 +146,7 @@ WMS에서 재고 동기화 이벤트 수신
   → product_master, product_item는 변경 없음
 ```
 
-### 흐름 4: 출고 시 재고 차감
+### 흐름 5: 출고 시 재고 차감
 
 ```
 출고 요청 (shipment)
@@ -205,6 +238,26 @@ WMS에서 재고 동기화 이벤트 수신
 | **동기화** | 9 | `last_synced_at` | timestamp | NULL | - | WMS 마지막 동기화 일시 |
 | **감사** | 10 | `created_at` | timestamp | NOT NULL | CURRENT_TIMESTAMP | 생성일 |
 | | 11 | `updated_at` | timestamp | NOT NULL | ON UPDATE CURRENT_TIMESTAMP | 수정일 |
+
+---
+
+### 5-6. marketplace_product_mapping (마켓 상품 매핑)
+
+| 그룹 | # | 컬럼명 | 타입 | NULL | 기본값 | 설명 |
+|---|---|---|---|---|---|---|
+| **PK** | 1 | `id` | bigint | NOT NULL | GENERATED ALWAYS AS IDENTITY | PK |
+| **마켓 식별** | 2 | `marketplace_type` | varchar(50) | NOT NULL | - | 마켓 구분 (naver, cafe24 등) |
+| | 3 | `marketplace_seller_id` | varchar(255) | NOT NULL | - | 마켓 판매처 ID |
+| | 4 | `marketplace_product_id` | varchar(255) | NOT NULL | - | 마켓 상품 식별코드 |
+| | 5 | `marketplace_option_id` | varchar(255) | NULL | - | 마켓 옵션 식별코드 (옵션 없으면 null) |
+| **내부 매핑** | 6 | `product_id` | bigint | NOT NULL | - | product_master.id (FK) |
+| | 7 | `product_item_id` | bigint | NULL | - | product_item.id (SKU, FK, 옵션 없으면 null) |
+| **감사** | 8 | `created_user_id` | varchar(100) | NOT NULL | 'SYSTEM' | 생성자 |
+| | 9 | `created_at` | timestamp | NOT NULL | CURRENT_TIMESTAMP | 생성일 |
+| | 10 | `updated_user_id` | varchar(100) | NULL | - | 수정자 |
+| | 11 | `updated_at` | timestamp | NOT NULL | CURRENT_TIMESTAMP | 수정일 |
+
+UNIQUE 제약: (marketplace_type, marketplace_seller_id, marketplace_product_id, marketplace_option_id)
 
 ---
 

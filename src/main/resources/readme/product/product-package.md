@@ -15,11 +15,13 @@ src/main/java/com/picknpack/
     │   ├── ProductItem.java
     │   ├── ProductOption.java
     │   ├── ProductItemOption.java
-    │   └── Inventory.java
+    │   ├── Inventory.java
+    │   └── MarketplaceProductMapping.java
     ├── repository/
     │   ├── ProductMasterRepository.java
     │   ├── ProductItemRepository.java
-    │   └── InventoryRepository.java
+    │   ├── InventoryRepository.java
+    │   └── MarketplaceProductMappingRepository.java
     ├── dto/
     │   ├── request/
     │   │   └── CreateProductRequest.java
@@ -82,11 +84,12 @@ API 응답의 공통 포맷. 예를 들어:
 **DB 테이블과 1:1 매핑되는 Java 클래스.**
 
 ```
-ProductMaster.java      ↔ product_master 테이블
-ProductItem.java        ↔ product_item 테이블
-ProductOption.java      ↔ product_option 테이블
-ProductItemOption.java  ↔ product_item_option 테이블
-Inventory.java          ↔ inventory 테이블
+ProductMaster.java              ↔ product_master 테이블
+ProductItem.java                ↔ product_item 테이블
+ProductOption.java              ↔ product_option 테이블
+ProductItemOption.java          ↔ product_item_option 테이블
+Inventory.java                  ↔ inventory 테이블
+MarketplaceProductMapping.java  ↔ marketplace_product_mapping 테이블
 ```
 
 JPA가 이 클래스를 보고 "이 객체는 이 테이블에서 온 데이터다"라고 인식합니다.
