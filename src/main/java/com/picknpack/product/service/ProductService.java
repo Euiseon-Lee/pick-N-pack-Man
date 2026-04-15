@@ -74,4 +74,9 @@ public class ProductService {
         }
         return result;
     }
+
+    public ProductResponse getProductDetail(Long id) {
+        ProductMaster product = productMasterRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다. id=" + id));
+        return ProductResponse.from(product);
+    }
 }
