@@ -19,8 +19,6 @@ import java.util.List;
  *  Entity = DB 테이블의 Java 표현 → "이 클래스는 DB의 이 테이블이다" 라고 선언하는 것.
  *  Entity의 각 필드 = 테이블의 각 컬럼
  *  Entity는 DB에서 꺼낸 데이터를 담는 그릇 → DB에서 한 행(row)을 읽으면 Entity 객체 하나가 생성됨
- *
- *
  */
 @Entity         // DB 테이블과 매핑되는 JPA Entity 클래스라는 annotation
 @Table(name = "product_master")
