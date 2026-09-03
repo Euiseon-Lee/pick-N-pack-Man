@@ -13,6 +13,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 
@@ -33,6 +35,7 @@ public class OrderItemHistory {
     @Column(name = "history_type", nullable = false)
     private Integer historyType;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "snapshot", columnDefinition = "jsonb")
     private String snapshot;
 

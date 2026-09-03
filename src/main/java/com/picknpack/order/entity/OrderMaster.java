@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -97,7 +99,7 @@ public class OrderMaster extends BaseEntity {
 
     // 상태/관리 - 출고보류
     @Column(name = "is_shipment_on_hold")
-    private short isShipmentOnHold;
+    private Short isShipmentOnHold;
 
     @Column(name = "shipment_hold_user_id", length = 100)
     private String shipmentHoldUserId;
@@ -107,7 +109,7 @@ public class OrderMaster extends BaseEntity {
 
     // 상태/관리 - 취소
     @Column(name = "is_canceled")
-    private short isCanceled;
+    private Short isCanceled;
 
     @Column(name = "canceled_user_id", length = 100)
     private String canceledUserId;
@@ -117,7 +119,7 @@ public class OrderMaster extends BaseEntity {
 
     // 상태/관리 - 삭제
     @Column(name = "is_deleted")
-    private short isDeleted;
+    private Short isDeleted;
 
     @Column(name = "deleted_user_id", length = 100)
     private String deletedUserId;
@@ -126,6 +128,8 @@ public class OrderMaster extends BaseEntity {
     private LocalDateTime deletedAt;
 
     // 원본 데이터
+    // String을 jsonb 컬럼에 넣으려면 JDBC 타입을 JSON으로 지정해야 함 (없으면 varchar → jsonb 캐스팅 오류)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "raw_data", columnDefinition = "jsonb")
     private String rawData;
 
