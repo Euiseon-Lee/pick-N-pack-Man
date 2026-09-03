@@ -1,5 +1,6 @@
 package com.picknpack.product.service;
 
+import com.picknpack.common.exception.ResourceNotFoundException;
 import com.picknpack.product.dto.request.CreateProductRequest;
 import com.picknpack.product.dto.response.ProductResponse;
 import com.picknpack.product.entity.ProductMaster;
@@ -76,7 +77,7 @@ public class ProductService {
     }
 
     public ProductResponse getProductDetail(Long id) {
-        ProductMaster product = productMasterRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("상품을 찾을 수 없습니다. id=" + id));
+        ProductMaster product = productMasterRepository.findById(id).orElseThrow(() -> ResourceNotFoundException.of("상품", id));
         return ProductResponse.from(product);
     }
 }
