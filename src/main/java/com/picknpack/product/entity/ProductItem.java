@@ -31,8 +31,7 @@ public class ProductItem extends BaseEntity {
     @Column(name = "sku_code", length = 100)
     private String skuCode;
 
-    @Column(name = "option_name")
-    private String optionName;
+    // 표시명("블랙/270mm")은 저장하지 않는다. product_item_option 의 값들을 옵션 종류 display_order 순으로 이어 붙여 만든다
 
     @Column(name = "unit_price", precision = 15, scale = 2)
     private BigDecimal unitPrice;

@@ -17,22 +17,22 @@ public class ProductOption extends BaseEntity {
     private Long id;
 
     /**
-     * //@ManyToOne	                        여러 ProductOption이 하나의 ProductMaster에 속한다
-     * fetch = FetchType.LAZY	            ProductMaster 정보를 지금 당장 안 가져오고, 실제로 접근할 때 가져온다
-     *      cf) FetchType.EAGER (즉시 로딩)   ProductOption을 조회하면 ProductMaster도 같이 조회 (기본 값)
-     * //@JoinColumn(name = "product_id")	    DB에서 product_id 컬럼으로 연결한다 (FK 컬럼명)
-     * private ProductMaster productMaster	Java에서는 ID 숫자(Long) 대신 ProductMaster 객체 자체를 필드로 가지므로, 객체 자체를 참조
+     * 옵션 값 하나 (블랙, 270mm ...). 어느 종류(컬러, 사이즈)의 값인지는 ProductOptionType 이 갖는다.
+     * 상품은 optionType.productMaster 로 도출하므로 여기에 product_id 를 두지 않는다.
+     *
+     * //@ManyToOne	                        여러 ProductOption이 하나의 ProductOptionType에 속한다
+     * fetch = FetchType.LAZY	            ProductOptionType 정보를 지금 당장 안 가져오고, 실제로 접근할 때 가져온다
+     *      cf) FetchType.EAGER (즉시 로딩)   ProductOption을 조회하면 ProductOptionType도 같이 조회 (기본 값)
+     * //@JoinColumn(name = "option_type_id")	DB에서 option_type_id 컬럼으로 연결한다 (FK 컬럼명)
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
-    private ProductMaster productMaster;
-
-    @Column(name = "option_type", nullable = false, length = 100)
-    private String optionType;
+    @JoinColumn(name = "option_type_id", nullable = false)
+    private ProductOptionType optionType;
 
     @Column(name = "option_value", nullable = false)
     private String optionValue;
 
-    @Column(name = "sort_order", nullable = false)
-    private Integer sortOrder = 0;
+    // 종류 안에서 값을 나열하는 순서 (260mm → 270mm → 280mm)
+    @Column(name = "display_order", nullable = false)
+    private Integer displayOrder = 0;
 }
