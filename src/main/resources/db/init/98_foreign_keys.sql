@@ -27,33 +27,17 @@ ALTER TABLE order_item
     ADD CONSTRAINT FK_order_item_matched_product_item
         FOREIGN KEY (matched_product_item_id) REFERENCES product_item (id);
 
--- 출고 → 주문 / 상품
-ALTER TABLE shipment_item
-    ADD CONSTRAINT FK_shipment_item_order
-        FOREIGN KEY (order_id) REFERENCES order_master (id);
-
+-- 출고 → 주문상품
 ALTER TABLE shipment_item
     ADD CONSTRAINT FK_shipment_item_order_item
         FOREIGN KEY (order_item_id) REFERENCES order_item (id);
-
-ALTER TABLE shipment_item
-    ADD CONSTRAINT FK_shipment_item_product_item
-        FOREIGN KEY (product_item_id) REFERENCES product_item (id);
 
 -- CS 도메인: 분류/코드 자기 참조
 ALTER TABLE cs_category
     ADD CONSTRAINT FK_cs_category_parent
         FOREIGN KEY (parent_id) REFERENCES cs_category (id);
 
-ALTER TABLE cs_claim_code
-    ADD CONSTRAINT FK_cs_claim_code_parent
-        FOREIGN KEY (parent_id) REFERENCES cs_claim_code (id);
-
 -- CS → 주문 / 출고
-ALTER TABLE cs_claim
-    ADD CONSTRAINT FK_cs_claim_order
-        FOREIGN KEY (order_id) REFERENCES order_master (id);
-
 ALTER TABLE cs_claim
     ADD CONSTRAINT FK_cs_claim_order_item
         FOREIGN KEY (order_product_id) REFERENCES order_item (id);
@@ -61,10 +45,6 @@ ALTER TABLE cs_claim
 ALTER TABLE cs_claim
     ADD CONSTRAINT FK_cs_claim_shipment
         FOREIGN KEY (shipment_id) REFERENCES shipment_master (id);
-
-ALTER TABLE cs_history
-    ADD CONSTRAINT FK_cs_history_order
-        FOREIGN KEY (order_id) REFERENCES order_master (id);
 
 ALTER TABLE cs_history
     ADD CONSTRAINT FK_cs_history_order_item
